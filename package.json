@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/desireemendes/tinyurl/issues"
   },
-  "homepage": "https://github.com/desireemendes/tinyurl#readme"
+  "homepage": "https://github.com/desireemendes/tinyurl#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
