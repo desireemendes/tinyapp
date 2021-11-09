@@ -12,6 +12,10 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+function generateRandomString() {
+  return Math.random().toString(36).substring(2, 8);
+  };
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -39,10 +43,16 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  // res.send("Ok");         // Respond with 'Ok' (we will replace this)
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = {longURL: req.body.longURL};
+  urlDatabase[shortURL] = req.body.longURL
+  // urlDatabase[shortURL] = {longURL: req.body.longURL};
   res.redirect(`/urls/${shortURL}`);
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL].longURL;
+  res.redirect(longURL);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -55,16 +65,16 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 });
 
-app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
-});
 
 app.post('/urls/:shortURL/delete', (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect(`/urls`);
 });
 
-function generateRandomString() {
-  return Math.random().toString(36).substring(2, 8);
-  };
+app.post('/urls/:shortURL', (req, res) => {
+  if (urlDatabase[req.params.shortURL]) {
+    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+  }
+  res.redirect(`/urls`); 
+});
+
