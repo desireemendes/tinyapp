@@ -5,6 +5,7 @@ app.set("view engine", "ejs");
 const cookieParser = require('cookie-parser')
 app.use(cookieParser())
 
+
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -75,6 +76,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post('/login', (req, res) => {
   const username = req.body.username
   res.cookie('username', username);
+
   res.redirect(`/urls`);
 });
 
