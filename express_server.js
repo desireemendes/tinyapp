@@ -14,7 +14,7 @@ const urlDatabase = {
 
 function generateRandomString() {
   return Math.random().toString(36).substring(2, 8);
-  };
+}
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -45,13 +45,14 @@ app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
   // res.send("Ok");         // Respond with 'Ok' (we will replace this)
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL
+  urlDatabase[shortURL] = req.body.longURL;
   // urlDatabase[shortURL] = {longURL: req.body.longURL};
   res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
+  // const longURL = urlDatabase[req.params.shortURL].longURL;
+  const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
 
@@ -60,8 +61,8 @@ app.get("/urls/:shortURL", (req, res) => {
     res.status(400);
     res.send("Page not found");
   } else {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
-  res.render("urls_show", templateVars);
+    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+    res.render("urls_show", templateVars);
   }
 });
 
@@ -75,6 +76,6 @@ app.post('/urls/:shortURL', (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   }
-  res.redirect(`/urls`); 
+  res.redirect(`/urls`);
 });
 
