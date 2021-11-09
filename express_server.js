@@ -60,6 +60,11 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+app.post('/urls/:shortURL/delete', (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect(`/urls`);
+});
+
 function generateRandomString() {
   return Math.random().toString(36).substring(2, 8);
   };
