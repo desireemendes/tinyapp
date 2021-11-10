@@ -2,8 +2,6 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
-const cookieParser = require('cookie-parser')
-app.use(cookieParser())
 
 
 const bodyParser = require("body-parser");
@@ -14,8 +12,36 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  },
+  "user3RandomID": {
+    id: "des",
+    email: "des@example.com",
+    password: "password"
+  }
+}
+//HELPER FUNCTIONS
 function generateRandomString() {
   return Math.random().toString(36).substring(2, 8);
+};
+
+const findUser = function (email, users) {
+  for (let userID in users) {
+    const user = users[userID];
+    if(email === user.email) {
+      return user
+    }
+  }
+  return false;
 }
 
 app.get("/", (req, res) => {
@@ -36,20 +62,15 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase,
-  username: req.cookies["username"]};
+
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { urls: urlDatabase,
-    username: req.cookies["username"]};
-  res.render("urls_new", templateVars);
-});
+
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  // res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  // console.log(req.body);  // Log the POST request body to the console
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   // urlDatabase[shortURL] = {longURL: req.body.longURL};
@@ -58,8 +79,13 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   // const longURL = urlDatabase[req.params.shortURL].longURL;
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  // if (urlDatabase[req.params.shortURL] === undefined) {
+  //   res.send("Short URL not found");
+  //   res.status(400);
+  // } else {
+    const longURL = urlDatabase[req.params.shortURL];
+    res.redirect(longURL);
+  // }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -67,24 +93,11 @@ app.get("/urls/:shortURL", (req, res) => {
     res.status(400);
     res.send("Page not found");
   } else {
-    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"] };
+
     res.render("urls_show", templateVars);
   }
 });
 
-app.post('/login', (req, res) => {
-  const username = req.body.username
-  res.cookie('username', username);
-
-  res.redirect(`/urls`);
-});
-
-app.post('/logout', (req, res) => {
-  const username = req.body.username
-  res.clearCookie('username', username)
-  res.redirect(`/urls`);
-})
 
 
 app.post('/urls/:shortURL/delete', (req, res) => {
