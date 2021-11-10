@@ -31,9 +31,19 @@ const users = {
     password: "password"
   }
 }
-
+//HELPER FUNCTIONS
 function generateRandomString() {
   return Math.random().toString(36).substring(2, 8);
+};
+
+const findUser = function (email, users) {
+  for (let userID in users) {
+    const user = users[userID];
+    if(email === user.email) {
+      return user
+    }
+  }
+  return false;
 }
 
 app.get("/", (req, res) => {
@@ -68,8 +78,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  // res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  // console.log(req.body);  // Log the POST request body to the console
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   // urlDatabase[shortURL] = {longURL: req.body.longURL};
@@ -94,7 +103,7 @@ app.get("/urls/:shortURL", (req, res) => {
   } else {
     // const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
     //   username: req.cookies["username"] };
-    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user_id: req.cookies.users_id }
+    const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user_id: req.cookies.users_id }
     res.render("urls_show", templateVars);
   }
 });
@@ -122,10 +131,16 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
   const email = req.body.email
   const password = req.body.password
-  let id = generateRandomString();
-  users[id] = { id, email, password };
-  res.cookie.user_id = id;
-  res.redirect('/urls');
+  if (!email || !password) {
+    res.status(400).send('Error 400 - Invalid email or password.');
+  } else if (findUser(email, users)){
+    res.status(400).send('Error 400 - Email already registered');
+  } else {
+    let id = generateRandomString();
+    users[id] = { id, email, password };
+    res.cookie.user_id = id;
+    res.redirect('/urls');
+  }
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
@@ -136,7 +151,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 //update URL's
 app.post('/urls/:shortURL', (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
-    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+    urlDatabase[req.params.shortURL] = req.body.longURL;
   }
   res.redirect(`/urls`);
 });
