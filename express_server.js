@@ -66,14 +66,14 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   // const templateVars = { urls: urlDatabase,
   //   username: req.cookies["username"]};
-  const templateVars = { urls: urlDatabase, user_id: req.cookies.users_id }
+  const templateVars = { urls: urlDatabase, user_id: req.cookies["user_id"] }
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
   // const templateVars = { urls: urlDatabase,
   //   username: req.cookies["username"]};
-  const templateVars = { urls: urlDatabase, user_id: req.cookies[users.id]}
+  const templateVars = { urls: urlDatabase, user_id: req.cookies["user.id"]}
   res.render("urls_new", templateVars);
 });
 
@@ -111,17 +111,33 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get('/login', (req, res) => {
   const templateVars = { user_id: null };
   res.render('login', templateVars);
-});
+})
+
+// app.post('/login', (req, res) => {
+//   const username = req.body.username;
+//   res.cookie('username', username);
+//   res.redirect(`/urls`);
+// });
 
 app.post('/login', (req, res) => {
-  const username = req.body.username;
-  res.cookie('username', username);
-  res.redirect(`/urls`);
-});
+  const email = req.body.email;
+  const password = req.body.passowrd;
+  const userFound = findUser(email, users);
+
+  if (!userFound && (password, userFound.password)) {
+    return res.status(403).send('Wrong email or password');
+  } 
+  // res.cookie.user_id = userFound.id;
+  res.cookie('user_id', userFound.id)
+  res.redirect('/urls');
+})
 
 app.post('/logout', (req, res) => {
-  const username = req.body.username;
-  res.clearCookie('username', username);
+  // const username = req.body.username;
+  // res.clearCookie('username', username);
+  // res.redirect(`/urls`);
+  // res.cookie.user_id = null;
+  res.clearCookie('user_id')
   res.redirect(`/urls`);
 });
 
@@ -143,7 +159,8 @@ app.post('/register', (req, res) => {
   } else {
     let id = generateRandomString();
     users[id] = { id, email, password };
-    res.cookie.user_id = id;
+    // res.cookie.user_id = id;
+    res.cookie('user_id', id);
     res.redirect('/urls');
   }
 });

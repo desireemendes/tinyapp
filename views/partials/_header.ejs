@@ -17,8 +17,9 @@
       <li><a class="nav nav-link" href="/register">Register</a></li>
     </ul>
     <% } else { %>
+      <span style="color:azure">Logged in as: <%= user_id %> </span>
     <form class="navbar-form" method="POST" action="/logout">
-      <button type="submit" class="btn btn-primary">Logout</button>
+      <button type="submit" class="btn btn-outline-success">Logout</button>
     </form>
         <%  } %>
   </nav>
