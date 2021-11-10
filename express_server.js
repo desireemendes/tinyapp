@@ -143,9 +143,9 @@ app.post('/login', (req, res) => {
   const password = req.body.passowrd;
   const userFound = findUser(email, users);
 
-  if (!userFound && (password, userFound.password)) {
+  if (!userFound && !bcrypt.compareSync(password, userFound.password)) {
     return res.status(403).send('Wrong email or password');
-  } 
+  }
   // res.cookie.user_id = userFound.id;
   res.cookie('user_id', userFound.id)
   res.redirect('/urls');
@@ -170,7 +170,7 @@ app.get('/register', (req, res) => {
 
 app.post('/register', (req, res) => {
   const email = req.body.email
-  const password = req.body.password
+  const password = bcrypt.hashSync(req.body.password, 10);
   if (!email || !password) {
     res.status(400).send('Error 400 - Invalid email or password.');
   } else if (findUser(email, users)){
