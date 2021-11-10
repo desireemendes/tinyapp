@@ -1,13 +1,18 @@
 const express = require("express");
+const cookieSession = require("cookie-session");
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
-const cookieParser = require('cookie-parser');
-app.use(cookieParser());
+
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 const bcrypt = require('bcryptjs');
+
+app.use(cookieSession({
+  name: 'session',
+  keys: ['you-cant-guess', 'my-top-secret-keys-321']
+}));
 
 const urlDatabase = {
   b6UTxQ: {
