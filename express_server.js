@@ -7,6 +7,7 @@ app.use(cookieParser());
 
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
+const bcrypt = require('bcryptjs');
 
 const urlDatabase = {
   b6UTxQ: {
@@ -52,6 +53,16 @@ const findUser = function (email, users) {
   return false;
 }
 
+const urlsForUser = function(id) {
+  let result = {};
+  for (const [key, value] of Object.entries(urlDatabase)) {
+    if (id === value.userID) {
+      result[key] = value.longURL;
+    }
+  }
+  return result
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
   // res.redirect(`/urls/`)
@@ -72,7 +83,8 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   // const templateVars = { urls: urlDatabase,
   //   username: req.cookies["username"]};
-  const templateVars = { urls: urlDatabase, user_id: req.cookies["user_id"] }
+  const user = res.cookie.user_id;
+  const templateVars = {urls: urlsForUser(user), user: users[user], user_id: users[user]};
   res.render("urls_index", templateVars);
 });
 
@@ -86,20 +98,21 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   // console.log(req.body);  // Log the POST request body to the console
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  // urlDatabase[shortURL] = {longURL: req.body.longURL};
+  const userID = res.cookie.user_id;
+  // urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {longURL: req.body.longURL};
   res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/u/:shortURL", (req, res) => {
   // const longURL = urlDatabase[req.params.shortURL].longURL;
-  // if (urlDatabase[req.params.shortURL] === undefined) {
-  //   res.send("Short URL not found");
-  //   res.status(400);
-  // } else {
-    const longURL = urlDatabase[req.params.shortURL];
+  if (urlDatabase[req.params.shortURL] === undefined) {
+    res.send("Short URL not found");
+    res.status(400);
+  } else {
+    const longURL = urlDatabase[req.params.shortURL].longURL;
     res.redirect(longURL);
-  // }
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
@@ -180,7 +193,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 //update URL's
 app.post('/urls/:shortURL', (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
-    urlDatabase[req.params.shortURL] = req.body.longURL;
+    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   }
   res.redirect(`/urls`);
 });
