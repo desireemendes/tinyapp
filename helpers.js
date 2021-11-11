@@ -8,4 +8,4 @@ const findUser = function(email, users) {
   return false;
 };
 
-module.exports = { findUser }
+module.exports = { findUser, urlDatabase, users, urlsForUser, generateRandomString };
