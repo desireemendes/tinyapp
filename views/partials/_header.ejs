@@ -9,19 +9,19 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+
       </div>
-    </div>
-   <% if (!user_id) { %>
-    <ul class="nav navbar-nav">
-      <li><a class="nav nav-link" href="/login">Login</a></li>
-      <li><a class="nav nav-link" href="/register">Register</a></li>
-    </ul>
-    <% } else { %>
-      <span style="color:azure">Logged in as: <%= user_id %> </span>
-    <form class="navbar-form" method="POST" action="/logout">
-      <button type="submit" class="btn btn-outline-success">Logout</button>
-    </form>
-        <%  } %>
+      <% if (!user_id) { %>
+        <ul class="nav navbar-nav">
+          <li><a class="nav nav-link" href="/login">Login</a></li>
+          <li><a class="nav nav-link" href="/register">Register</a></li>
+        </ul>
+        <% } else { %>
+          <span style="color:azure">Logged in as: <%= user_id %> </span>
+          <form class="navbar-form" method="POST" action="/logout">
+            <button type="submit" class="btn btn-outline-success">Logout</button>
+          </form>
+          <% } %>
+            </form>
   </nav>
 </header>
-
