@@ -4,7 +4,7 @@ const cookieSession = require("cookie-session");
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require('bcryptjs');
-const { findUser } = = require('./helpers');
+const { findUser } = require('./helpers');
 
 const bodyParser = require("body-parser");
 
@@ -70,7 +70,9 @@ app.get('/urls', (req, res) => {
     return;
   }
   const user = req.session.user_id;
-  const templateVars = {urls: urlsForUser(user), user: users[user], user_id: users[user].id};
+  const templateVars = {urls: urlsForUser(user), 
+    user: users[user], 
+    user_id: users[user].id};
   res.render('urls_index', templateVars);
 });
 
@@ -140,7 +142,9 @@ app.get('/urls/:shortURL', (req, res) => {
     res.status(400);
     res.send("Not Found");
   }
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user_id: req.session.user_id};
+  const templateVars = { shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL].longURL, 
+    user_id: req.session.user_id};
   res.render("urls_show", templateVars);
 });
 
