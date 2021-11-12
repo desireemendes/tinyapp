@@ -16,6 +16,12 @@ app.use(cookieSession({
 
 app.set("view engine", "ejs");
 
+// If logged in, redirect to urls, otherwise redirect to login
+app.get('/', (req, res) => {
+  const loggedIn = req.session.user_id;
+  loggedIn ? res.redirect('/urls') : res.redirect('/login');
+});
+
 app.get('/urls', (req, res) => {
   if (!req.session.user_id || !users[req.session.user_id]) {
     res.redirect('/login');
@@ -66,7 +72,7 @@ app.get('/login', (req, res) => {
   res.render('login', templateVars);
 });
   
-  
+
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -79,6 +85,8 @@ app.post('/login', (req, res) => {
   res.redirect('/urls');
 });
 
+
+
 app.post('/logout', (req, res) => {
   req.session.user_id = null;
   res.redirect('/urls');
@@ -89,24 +97,26 @@ app.get('/urls/new', (req, res) => {
   res.render('urls_new', templateVars);
 });
 
+// Only logged in users can modify URLS
 app.get('/urls/:shortURL', (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
     res.status(400);
     res.send("Not Found");
-  }
+  };
+
   const templateVars = { shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL].longURL, 
     user_id: req.session.user_id};
   res.render("urls_show", templateVars);
 });
 
-//deletes URL
+// Deletes URL
 app.post('/urls/:shortURL/delete', (req, res) => {
   delete urlDatabase[req.params.shortURL];
   res.redirect(`/urls`);
 });
 
-//updates URL
+// Updates URL
 app.post('/urls/:shortURL', (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     urlDatabase[req.params.shortURL].longURL = req.body.longURL;
