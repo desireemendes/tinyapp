@@ -24,12 +24,13 @@ app.get('/', (req, res) => {
 
 app.get('/urls', (req, res) => {
   if (!req.session.user_id || !users[req.session.user_id]) {
-    res.redirect('/login');
-    return;
+    return res.status(400).send("Page not found. Please <a href='/login'> login to view this page</a>");
+    // res.status(400).send('You must login to view this page')
+    // res.redirect('/login')
   }
   const user = req.session.user_id;
-  const templateVars = {urls: urlsForUser(user), 
-    user: users[user], 
+  const templateVars = {urls: urlsForUser(user),
+    user: users[user],
     user_id: users[user].id};
   res.render('urls_index', templateVars);
 });
@@ -46,11 +47,13 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
+//Registration functionality
 app.get('/register', (req, res) => {
   const templateVars = {user_id: req.session.user_id};
   res.render("register", templateVars);
 });
 
+//Registration functionality and errors
 app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = bcrypt.hashSync(req.body.password, 10);
@@ -67,6 +70,7 @@ app.post('/register', (req, res) => {
   }
 });
 
+//Login functionality
 app.get('/login', (req, res) => {
   const templateVars = { user_id: null };
   res.render('login', templateVars);
@@ -77,24 +81,26 @@ app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const userFound = findUser(email, users);
-  
-  if (!userFound && !bcrypt.compareSync(password, userFound.password)) {
+  if (!userFound || (userFound && !bcrypt.compareSync(password, userFound.password))) {
     return res.status(403).send('Wrong email or password');
   }
   req.session.user_id = userFound.id;
   res.redirect('/urls');
 });
 
-
-
 app.post('/logout', (req, res) => {
   req.session.user_id = null;
   res.redirect('/urls');
 });
 
+//****** */
 app.get('/urls/new', (req, res) => {
   const templateVars = {user_id: req.session.user_id};
-  res.render('urls_new', templateVars);
+  if (!templateVars.user_id) {
+    res.redirect('/login');
+  } else {
+    res.render('urls_new', templateVars);
+  }
 });
 
 // Only logged in users can modify URLS
@@ -102,10 +108,10 @@ app.get('/urls/:shortURL', (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
     res.status(400);
     res.send("Not Found");
-  };
+  }
 
-  const templateVars = { shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL].longURL, 
+  const templateVars = { shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL].longURL,
     user_id: req.session.user_id};
   res.render("urls_show", templateVars);
 });
@@ -125,7 +131,7 @@ app.post('/urls/:shortURL', (req, res) => {
 });
 
 app.get('/u/:shortURL', (req, res) => {
-  if (urlDatabase[req.params.shortURL] === undefined) {
+  if (!urlDatabase[req.params.shortURL]) {
     res.send("Short URL not found");
     res.status(400);
   } else {

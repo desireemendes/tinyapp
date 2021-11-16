@@ -1,6 +1,6 @@
 // Checks to see if user exists in database
 const findUser = function(email, users) {
-  for (let userID in users) {
+  for (const userID in users) {
     const user = users[userID];
     if(email === user.email) {
       return user;
