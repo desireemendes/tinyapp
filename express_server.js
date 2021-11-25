@@ -25,8 +25,6 @@ app.get('/', (req, res) => {
 app.get('/urls', (req, res) => {
   if (!req.session.user_id || !users[req.session.user_id]) {
     return res.status(400).send("Page not found. Please <a href='/login'> login to view this page</a>");
-    // res.status(400).send('You must login to view this page')
-    // res.redirect('/login')
   }
   const user = req.session.user_id;
   const templateVars = {urls: urlsForUser(user),
@@ -42,23 +40,19 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
-
 //Registration functionality
 app.get('/register', (req, res) => {
   const templateVars = {user_id: req.session.user_id};
   res.render("register", templateVars);
 });
 
-//Registration functionality and errors
+
+//Registration functionality and error messages
 app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = bcrypt.hashSync(req.body.password, 10);
 
-  if (!email || !password) {
+  if (!email || !req.body.password) {
     res.status(400).send('Error 400 - Invalid email or password');
   } else if (findUser(email, users)) {
     res.status(400).send('Error 400 - Email already registered');
@@ -68,6 +62,7 @@ app.post('/register', (req, res) => {
     req.session.user_id = id;
     res.redirect('/urls');
   }
+
 });
 
 //Login functionality
@@ -89,13 +84,14 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  req.session.user_id = null;
+  req.session = null;
   res.redirect('/urls');
 });
 
-//****** */
+
 app.get('/urls/new', (req, res) => {
-  const templateVars = {user_id: req.session.user_id};
+  const user = req.session.user_id;
+  const templateVars = {user_id: users[user].id, user: users[user]};
   if (!templateVars.user_id) {
     res.redirect('/login');
   } else {
@@ -106,28 +102,39 @@ app.get('/urls/new', (req, res) => {
 // Only logged in users can modify URLS
 app.get('/urls/:shortURL', (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
-    res.status(400);
-    res.send("Not Found");
+    res.status(404).send('Error 404 - Not found.');
+  } else if (urlDatabase[req.params.shortURL].userID === req.session.user_id) {
+    const templateVars = {
+      user_id: users[req.session.user_id].id, user: users[req.session.user_id],
+      shortURL: req.params.shortURL,
+      longURL: urlDatabase[req.params.shortURL].longURL,
+    };
+    res.render('urls_show', templateVars);
+  } else {
+    res.status(400).send('Error - Unauthorized. <a href="/login">Login</a> or <a href="/register">Register</a>.');
   }
-
-  const templateVars = { shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    user_id: req.session.user_id};
-  res.render("urls_show", templateVars);
 });
 
 // Deletes URL
+
 app.post('/urls/:shortURL/delete', (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect(`/urls`);
+  if (urlDatabase[req.params.shortURL] && urlDatabase[req.params.shortURL].userID === req.session.user_id) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect(`/urls`);
+  } else {
+    res.status(404).send('Error 404 - Not logged in!');
+  }
 });
 
 // Updates URL
 app.post('/urls/:shortURL', (req, res) => {
-  if (urlDatabase[req.params.shortURL]) {
-    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+  const shortURL = req.params.shortURL;
+  if (!req.session.user_id || req.session.user_id !== urlDatabase[shortURL].userID) {
+    return res.status(400).send('Access denied. <a href="/login">Login</a> or <a href="/register">Register</a>.');
   }
-  res.redirect(`/urls`);
+  const newLongURL = req.body.longURL;
+  urlDatabase[shortURL].longURL = newLongURL;
+  return res.redirect('/urls');
 });
 
 app.get('/u/:shortURL', (req, res) => {
